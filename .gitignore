@@ -1,0 +1,12 @@
+﻿.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.dll
+*.exe
+.vscode/
+.env
+*.log
+yolo11n.pt
+test.png
+medicine_test.png
