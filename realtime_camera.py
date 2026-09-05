@@ -103,28 +103,47 @@ while True:
             center_x = (x1 + x2) / 2
             center_y = (y1 + y2) / 2
 
-            # Position
+            # ------------------------------------------------
+            # Horizontal position
+            # ------------------------------------------------
+
             if center_x < width / 3:
                 horizontal = "LEFT"
+
             elif center_x < (2 * width / 3):
                 horizontal = "CENTER"
+
             else:
                 horizontal = "RIGHT"
 
+            # ------------------------------------------------
+            # Vertical position
+            # ------------------------------------------------
+
             if center_y < height / 3:
                 vertical = "ABOVE"
+
             elif center_y < (2 * height / 3):
                 vertical = "CENTER"
+
             else:
                 vertical = "BELOW"
 
+            # ------------------------------------------------
             # Approximate proximity
-            area_ratio = (box_width * box_height) / (width * height)
+            # ------------------------------------------------
+
+            area_ratio = (
+                (box_width * box_height)
+                / (width * height)
+            )
 
             if area_ratio > 0.25:
                 proximity = "NEAR"
+
             elif area_ratio > 0.08:
                 proximity = "MEDIUM"
+
             else:
                 proximity = "FAR"
 
@@ -141,14 +160,9 @@ while True:
     # 2. UNDERSTAND + ASSESS
     # --------------------------------------------------------
 
-    vision_result = {
-        "status": "success",
-        "objects_detected": len(detections),
-        "detections": detections
-    }
-
-    safety_result = safety_tool.assess_environment(
-        vision_result
+    # SafetyRiskTool expects the detection list directly.
+    safety_result = safety_tool.assess_risk(
+        detections
     )
 
     current_risk = safety_result["overall_risk"]
@@ -179,7 +193,7 @@ while True:
 
     important_object = "None"
 
-    if safety_result["detections"]:
+    if safety_result["hazards"]:
 
         risk_order = {
             "CRITICAL": 4,
@@ -189,7 +203,7 @@ while True:
         }
 
         highest_detection = max(
-            safety_result["detections"],
+            safety_result["hazards"],
             key=lambda item: risk_order.get(
                 item["risk"],
                 0
@@ -206,29 +220,38 @@ while True:
     if confirmed_risk == "CRITICAL":
 
         action = "STOP"
+
         message = (
             f"Stop immediately. "
             f"{important_object} is a critical hazard."
         )
+
         hazard_present = True
+
 
     elif confirmed_risk == "HIGH":
 
         action = "CAUTION"
+
         message = (
             f"Caution. "
             f"{important_object} is nearby."
         )
+
         hazard_present = True
+
 
     elif confirmed_risk == "MEDIUM":
 
         action = "SLOW DOWN"
+
         message = (
             f"Slow down. "
             f"{important_object} detected."
         )
+
         hazard_present = True
+
 
     else:
 
@@ -236,7 +259,11 @@ while True:
 
         if hazard_present:
 
-            message = "Hazard cleared. Path appears clear. Continue."
+            message = (
+                "Hazard cleared. "
+                "Path appears clear. Continue."
+            )
+
             hazard_present = False
 
         else:
@@ -318,8 +345,8 @@ while True:
     # 8. RE-CHECK
     # --------------------------------------------------------
 
-    # The loop automatically returns to the camera
-    # and checks the environment again.
+    # The loop continuously returns to the camera,
+    # reassesses the environment, and verifies the risk.
 
 
     # --------------------------------------------------------
